@@ -14,33 +14,34 @@ load_dotenv(dotenv_path=env_path)
 app = Flask(__name__)
 
 # Configure SlackEventAdapter to handle events
-slack_event_adapter = SlackEventAdapter(os.environ['SIGNING_SECRET'],'/slack/events',app)
+slack_event_adapter = SlackEventAdapter(os.environ['SIGNING_SECRET'], '/slack/events', app)
 
 # Using WebClient in slack, there are other clients built-in as well !!
 client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
 
 # connect the bot to the channel in Slack Channel
-client.chat_postMessage(channel='#cps-847-course', text='Send Message Demo')
+client.chat_postMessage(channel='#assign1', text='Startup Message')
 
 # Get Bot ID
 BOT_ID = client.api_call("auth.test")['user_id']
+
 
 @app.route('/')
 def hello():
     return 'up'
 
 
-
 # handling Message Events
 @slack_event_adapter.on('message')
 def message(payload):
     print(payload)
-    event = payload.get('event',{})
+    event = payload.get('event', {})
     channel_id = event.get('channel')
     user_id = event.get('user')
     text2 = event.get('text')
-    if BOT_ID !=user_id:
-        client.chat_postMessage(channel=channel_id, text=payload)
+    if BOT_ID != user_id and text2[-1] == '?':
+        client.chat_postMessage(channel=channel_id, text=text2)
+
 
 # Run the webserver micro-service
 if __name__ == "__main__":
